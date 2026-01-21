@@ -18,6 +18,7 @@ from django.contrib.auth.models import User
 #Buscador que devuelve error si no encuentra lo que busca
 from django.shortcuts import get_object_or_404
 
+#SIGNUP
 #Filtro, solo acepta envíos
 @api_view(['POST'])
 def signup(request):
@@ -34,5 +35,32 @@ def signup(request):
         # Creación :D
         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     
-    # Error D:
+    #Error D:
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+#Pedir token al perderla o cerrar sesión, login
+
+@api_view(['POST'])
+def login(request):
+    #Buscar al usuario por su nombre
+    user = get_object_or_404(User, username=request.data['username'])
+    
+    #ver si contraseña coincide
+    if not user.check_password(request.data['password']):
+        return Response({"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    #Obtenemos su llave (Token) o la creamos si no tiene
+    token, created = Token.objects.get_or_create(user=user)
+    
+    # exitoOoOo, yay
+    serializer = UserSerializer(instance=user)
+    return Response({"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK)
+
+#LOGOUT
+@api_view(['POST'])
+def logout(request):
+    # Borramos el token del usuario que hace la petición
+    request.user.auth_token.delete()
+    return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
