@@ -3,7 +3,21 @@ from rest_framework import serializers
 #Importando tablita de usuarios :)
 from django.contrib.auth.models import User
 
-#Configuración
+#Configuración TASK
+from .models import Task
+
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'title', 'description', 'status', 
+            'priority', 'created_at', 'updated_at', 'due_date'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+
+#Configuración USUARIOS
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -21,3 +35,4 @@ class UserSerializer(serializers.ModelSerializer):
         # Crea el usuario usando create_user para que la contraseña se guarde encriptada 
         user = User.objects.create_user(**validated_data)
         return user
+    
